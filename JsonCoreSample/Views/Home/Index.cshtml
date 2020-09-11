@@ -1,0 +1,297 @@
+﻿@model   IList<JsonSample.Models.Book>
+
+@{
+
+    ViewData["Title"] = "Books";
+}
+
+<div class="container-fluid">
+
+    <div class="row ">
+
+        <div class="col-10">
+            @(Html.Kendo().Grid(Model)
+        .Name("grid")
+        .Pageable(pageable => pageable
+            .Refresh(true)
+            .PageSizes(true)
+            .ButtonCount(5))
+        .Sortable()
+        .Groupable()
+        .Selectable(selectable => selectable
+        .Mode(GridSelectionMode.Multiple)
+        .Type(GridSelectionType.Cell))
+        .ToolBar(t => t.Search())
+
+        .Columns(columns =>
+        {
+
+            columns.Select().Width(50);
+            columns.Bound(c => c.id).Title("Book ID").Width(100);
+            columns.Bound(c => c.name).Title("Name").Width(220);
+            columns.Bound(c => c.author).Title("Author").Width(140);
+            columns.Bound(c => c.category).Title("Category").Width(110);
+            columns.Command(command => { command.Edit(); command.Destroy(); }).Width(160);
+        })
+        .DataSource(dataSource => dataSource
+            .Ajax()
+            .Read(read => read.Action("Books_Read", "Grid"))
+            .PageSize(5)
+            .ServerOperation(false)
+             //.Events(events => events.Error("error_handler"))
+             .Model(model => model.Id(p => p.id))
+             .Create(update => update.Action("EditingPopup_Create", "Grid"))
+            .Read(read => read.Action("EditingPopup_Read", "Grid"))
+            .Update(update => update.Action("EditingPopup_Update", "Grid"))
+            .Destroy(update => update.Action("EditingPopup_Destroy", "Grid"))
+            )
+           .ToolBar(tools =>
+           {
+               tools.Pdf().Text("Custom PDF button text");
+               tools.Excel().Text("Custom Excel button text");
+           })
+           .Editable(editable => editable.Mode(GridEditMode.PopUp))
+           .Events(ev => ev.Change("onChangeonGrid"))
+
+    )
+        </div>
+        
+        
+        <div class="col-2">
+
+            @(Html.Kendo().NumericTextBox()
+          .Name("age")
+          .Value(10)
+          .Spinners(true)
+            )
+            @(Html.Kendo().AutoComplete()
+        .Name("animals")
+        .BindTo(new string[] {
+              "Ant",
+              "Antilope",
+              "Badger"
+        })
+        .Events(e =>
+        {
+            e.Change("onChange");
+        })
+    )
+
+
+            <span id="tooltip" class="k-button wider">Hover me!</span>
+
+            @(Html.Kendo().Tooltip()
+        .For("#tooltip")
+        .Position(TooltipPosition.Top)
+        .Content("Hello!")
+    )
+
+
+
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6">
+
+
+
+            <div class="k-card k-state-primary">
+                <div class="k-card-body">
+                    <h5 class="k-card-title">Card Title Primary</h5>
+                    <h6 class="k-card-subtitle">Card Subtitle</h6>
+                    <p>Some quick example text to build on the card title and make up the bulk of the card content.</p>
+                </div>
+                <div class="k-card-actions">
+                    <span class="k-button k-flat k-primary">Action 1</span>
+                    <span class="k-button k-flat k-primary">Action 2</span>
+                </div>
+            </div>
+
+
+            @(Html.Kendo().Editor()
+    .Name("editor")
+    .Events(e => e
+        .Change("onChange")
+        .Execute("onExecute")
+        .Keydown("onKeydown")
+        .Keyup("onKeyup")
+        .Paste("onPaste")
+        .PdfExport("onPdfExport")
+        .Select("onSelect")
+    )
+)
+
+
+
+        </div>
+        <div class="col-6">
+
+
+            <div class="k-card k-state-success">
+                <div class="k-card-body">
+                    <h5 class="k-card-title">Card Title Success</h5>
+                    <h6 class="k-card-subtitle">Card Subtitle</h6>
+                    <p>Some quick example text to build on the card title and make up the bulk of the card content.</p>
+                </div>
+                <div class="k-card-actions">
+                    <span class="k-button k-flat k-primary">Action 1</span>
+                    <span class="k-button k-flat k-primary">Action 2</span>
+                </div>
+            </div>
+
+
+
+            @(Html.Kendo().Map()
+        .Name("map")
+        .Center(30.268107, -97.744821)
+        .Zoom(3)
+        .Layers(layers =>
+        {
+            layers.Add()
+                .Type(MapLayerType.Tile)
+                .UrlTemplate("http://tile2.opencyclemap.org/transport/#= zoom #/#= x #/#= y #.png")
+                .Subdomains("a", "b", "c")
+                .Attribution("&copy; <a href='http://osm.org/copyright'>OpenStreetMap contributors</a>." +
+                            "Tiles courtesy of <a href='http://www.opencyclemap.org/'>Andy Allan</a>");
+        })
+    )
+
+        </div>
+    </div>
+
+
+
+
+
+
+
+    </div>
+<style>
+
+    #grid .k-grid-header-wrap > table, // A header table.
+    #grid .k-grid-content table, // A data table, no virtual scrolling.
+    #grid .k-virtual-scrollable-wrap table // A data table, with virtual scrolling. {
+        min-width: 900px;
+    }
+
+    #grid .k-grid-content table table, // A data table, no virtual scrolling.
+    #grid .k-virtual-scrollable-wrap table table // A data table, with virtual scrolling. {
+        min-width: initial;
+    }
+
+
+</style>
+
+<script>
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+
+    function onChangeonGrid(arg) {
+        kendoConsole.log("The selected product ids are: [" + this.selectedKeyNames().join(", ") + "]");
+    }
+
+
+
+    function onChangeGrid(e) {
+        var selectedRows = this.select();
+        var selectedDataItems = [];
+        for (var i = 0; i < selectedRows.length; i++) {
+            var dataItem = this.dataItem(selectedRows[i]);
+            selectedDataItems.push(dataItem);
+        }
+
+        // selectedDataItems contains all selected data items
+        console.log(selectedDataItems);
+    }
+
+
+
+
+
+$(function(){
+    var numeric = $("#age").data("kendoNumericTextBox");
+    numeric.value(10);
+});
+
+
+    function onChange(e) {
+        var autoComplete = e.sender;
+    }
+
+      $(document).ready(function() {
+            // The For() configuration option of the Tooltip is used to get its client-side instance.
+            var tooltip = $("#tooltip").data("kendoTooltip");
+        });
+
+    $(document).ready(function () {
+
+        var autoComplete = $("#animals").data("kendoAutoComplete");
+
+        // Attach an event handler that will be executed each time the event is fired.
+        autoComplete.bind("change", function (e) {
+            console.log("change event handler");
+        });
+
+        // Attach an event handler that will be executed only the first time the event is fired.
+        autoComplete.one("open", function (e) {
+            console.log("open event handler");
+        });
+    });
+
+    //$(function () {
+
+    //    var dropdownlist = $("#dropdownlist").data("kendoDropDownList");
+    //    console.log(dropdownlist);
+    //});
+
+    function onChange(e) {
+        kendoConsole.log("value change");
+    }
+
+    function onExecute(e) {
+        kendoConsole.log("command :: " + e.name);
+    }
+
+    function onKeydown(e) {
+        kendoConsole.log("key down");
+    }
+
+    function onKeyup(e) {
+        kendoConsole.log("key up");
+    }
+
+    function onPaste(e) {
+        kendoConsole.log("paste :: " + kendo.htmlEncode(e.html));
+    }
+
+    function onPdfExport(e) {
+        kendoConsole.log("PDF export");
+    }
+
+    function onSelect(e) {
+        kendoConsole.log("selection  change");
+    }
+
+
+    $("#zoom").click(function (e) {
+        var map = $("#map").data("kendoMap")
+        map.zoom(
+            parseInt($("#zoomLevel").val(), 10)
+        );
+    });
+
+
+</script>
